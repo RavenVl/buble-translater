@@ -1,58 +1,25 @@
-var mas = [];
 window.onload = function () {
-
+    //div = document.getElementById("buble");
     document.addEventListener("mouseup", selectChanged);
     document.addEventListener("mousedown", cleanDiv);
-    var div = document.getElementById("buble");
+
 
 }
 
 function selectChanged(e) {
     var selObj = window.getSelection();
-    var range  = selObj.getRangeAt(0);
-    var itog =range.cloneContents();
-    if(itog.textContent != ''){
+    var range = selObj.getRangeAt(0);
+    var itog = range.cloneContents();
+    if (itog.textContent != '') {
         var docX = e.clientX + "px";
         var docY = e.clientY + "px";
         var div = document.createElement('div');
         div.className = "alert";
-        div.id="buble";
+        div.id = "buble";
         div.style.left = docX;
         div.style.top = docY;
-        var mas = getTranslate(itog.textContent);
-        var out = getTraslateHtml(mas);
-        div.innerHTML = out;
-        document.body.appendChild(div);
-
-
-
-        var div2 = document.getElementById("buble");
-        var elements = div2.getElementsByTagName('div');
-
-        for (let i = 0; i < elements.length; i++) {
-            var input = elements[i];
-
-
-            input.addEventListener("mouseover", function () {
-                this.style.fontWeight=800;
-                this.style.fontSize="1.2em";
-                let val = mas[0]['meanings'];
-                let  curImg = val[i]['image_url'];
-                var contIimg = document.getElementById("slideshow_display");
-                var img =contIimg.firstElementChild;
-                img.src = curImg;
-
-
-            });
-
-
-            input.addEventListener("mouseout", function () {
-                this.style.fontWeight=400;
-                this.style.fontSize="1em";
-            });
-        }
+        getTranslate(itog.textContent, div);
     }
-
 }
 
 function cleanDiv(e) {
@@ -61,16 +28,47 @@ function cleanDiv(e) {
     if(div!= null) document.body.removeChild(div);
 }
 
-function getTranslate(word){
+function getTranslate(word, div){
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'http://dictionary.skyeng.ru/api/v2/search-word-translation?text='+word, false);
+    xhr.open('GET', 'http://dictionary.skyeng.ru/api/v2/search-word-translation?text='+word, true);
     xhr.send();
-    if (xhr.status != 200) {
-        alert( xhr.status + ': ' + xhr.statusText ); // пример вывода: 404: Not Found
-    } else {
-        // вывести результат
+    xhr.onreadystatechange = function() { // (3)
+        if (xhr.readyState != 4) return;
+        if (xhr.status != 200) {
+            alert(xhr.status + ': ' + xhr.statusText);
+        } else {
+            var mas = JSON.parse(xhr.responseText)
+            var out = getTraslateHtml(mas);
+            div.innerHTML = out;
+            document.body.appendChild(div);
 
-        return JSON.parse(xhr.responseText) //getTraslateHtml(mas);
+            var elements = div.getElementsByTagName('div');
+
+            for (let i = 0; i < elements.length; i++) {
+                var input = elements[i];
+
+
+                input.addEventListener("mouseover", function () {
+                    this.style.fontWeight=800;
+                    this.style.fontSize="1.2em";
+                    let val = mas[0]['meanings'];
+                    let  curImg = val[i]['image_url'];
+                    var contIimg = document.getElementById("slideshow_display");
+                    var img =contIimg.firstElementChild;
+                    img.src = curImg;
+
+
+                });
+
+
+                input.addEventListener("mouseout", function () {
+                    this.style.fontWeight=400;
+                    this.style.fontSize="1em";
+                });
+            }
+        }
+
+
     }
 }
 
